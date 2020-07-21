@@ -48,12 +48,8 @@ function Start-IcingaAgentInstallWizard()
 
     if ($SkipDirectorQuestion -eq $FALSE) {
         if ($null -eq $UseDirectorSelfService) {
-            if ((Get-IcingaAgentInstallerAnswerInput -Prompt 'Do you want to use the Icinga Director Self-Service API?' -Default 'y').result -eq 1) {
-                $UseDirectorSelfService = $TRUE;
-            } else {
                 $UseDirectorSelfService = $FALSE;
-                $InstallerArguments += '-UseDirectorSelfService 0';
-            }
+                $InstallerArguments += '-UseDirectorSelfService 0';  
         }
         if ($UseDirectorSelfService) {
 
@@ -140,50 +136,22 @@ function Start-IcingaAgentInstallWizard()
         }
     }
 
-    # 'latest' is deprecated starting with 1.1.0
-    if ($AgentVersion -eq 'latest') {
         $AgentVersion = 'release';
         Write-IcingaConsoleWarning -Message 'The value "latest" for the argmument "AgentVersion" is deprecated. Please use the value "release" in the future!';
-    }
+    
 
     if ([string]::IsNullOrEmpty($Hostname) -And $null -eq $AutoUseFQDN -And $null -eq $AutoUseHostname) {
-        if ((Get-IcingaAgentInstallerAnswerInput -Prompt 'Do you want to specify the hostname manually?' -Default 'n').result -eq 1) {
             $HostFQDN     = Get-IcingaHostname -AutoUseFQDN 1 -AutoUseHostname 0 -LowerCase 1 -UpperCase 0;
-            if ((Get-IcingaAgentInstallerAnswerInput -Prompt ([string]::Format('Do you want to automatically fetch the hostname as FQDN? (Result: "{0}")', $HostFQDN)) -Default 'y').result -eq 1) {
-                $InstallerArguments += '-AutoUseFQDN 1';
-                $InstallerArguments += '-AutoUseHostname 0';
-                $AutoUseFQDN         = $TRUE;
-                $AutoUseHostname     = $FALSE;
-            } else {
-                $InstallerArguments += '-AutoUseFQDN 0';
-                $InstallerArguments += '-AutoUseHostname 1';
-                $AutoUseFQDN         = $FALSE;
-                $AutoUseHostname     = $TRUE;
-            }
+            $InstallerArguments += '-AutoUseFQDN 1';
+            $InstallerArguments += '-AutoUseHostname 0';
+            $AutoUseFQDN         = $TRUE;
+            $AutoUseHostname     = $FALSE;
             $Hostname = Get-IcingaHostname -AutoUseFQDN $AutoUseFQDN -AutoUseHostname $AutoUseHostname -LowerCase 1 -UpperCase 0;
-            if ((Get-IcingaAgentInstallerAnswerInput -Prompt ([string]::Format('Do you want to convert the hostname into lower case characters? (Result: "{0}")', $Hostname)) -Default 'y').result -eq 1) {
-                $InstallerArguments += '-LowerCase 1';
-                $InstallerArguments += '-UpperCase 0';
-                $LowerCase = $TRUE;
-                $UpperCase = $FALSE;
-            } else {
-                $Hostname = Get-IcingaHostname -AutoUseFQDN $AutoUseFQDN -AutoUseHostname $AutoUseHostname -LowerCase 0 -UpperCase 1;
-                if ((Get-IcingaAgentInstallerAnswerInput -Prompt ([string]::Format('Do you want to convert the hostname into upper case characters? (Result: "{0}")', $Hostname)) -Default 'y').result -eq 1) {
-                    $InstallerArguments += '-LowerCase 0';
-                    $InstallerArguments += '-UpperCase 1';
-                    $LowerCase = $FALSE;
-                    $UpperCase = $TRUE;
-                } else {
-                    $InstallerArguments += '-LowerCase 0';
-                    $InstallerArguments += '-UpperCase 0';
-                    $LowerCase = $FALSE;
-                    $UpperCase = $FALSE;
-                }
-            }
+            $InstallerArguments += '-LowerCase 1';
+            $InstallerArguments += '-UpperCase 0';
+            $LowerCase = $TRUE;
+            $UpperCase = $FALSE;
             $Hostname = Get-IcingaHostname -AutoUseFQDN $AutoUseFQDN -AutoUseHostname $AutoUseHostname -LowerCase $LowerCase -UpperCase $UpperCase;
-        } else {
-            $Hostname = (Get-IcingaAgentInstallerAnswerInput -Prompt 'Please specify the hostname to use' -Default 'v').answer;
-        }
     } else {
         if ($AutoUseFQDN -Or $AutoUseHostname) {
             $Hostname = Get-IcingaHostname -AutoUseFQDN $AutoUseFQDN -AutoUseHostname $AutoUseHostname -LowerCase $LowerCase -UpperCase $UpperCase;
